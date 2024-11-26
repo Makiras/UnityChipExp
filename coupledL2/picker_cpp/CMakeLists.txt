@@ -12,8 +12,14 @@ set(ENABLE_XCOROUTINE true)
 
 
 # libs find by picker
-include_directories(/usr/local/share/picker/include)
-link_directories(/usr/local/share/picker/lib)
+include_directories(
+        /usr/local/share/picker/include
+        ~/.local/picker/include
+)
+link_directories(
+        /usr/local/share/picker/lib
+        ~/.local/picker/lib
+)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcoroutines")
 add_definitions(-DUSE_VERILATOR)
@@ -32,5 +38,5 @@ set(DUT_MODULE_DIR ${CMAKE_SOURCE_DIR}/out/picker_out_coupledL2/UT_CoupledL2)
 
 include_directories(${DUT_MODULE_DIR})
 link_directories(${DUT_MODULE_DIR})
-add_executable(test_coupledL2 test_dut.cpp ${DUT_MODULE_DIR}/UT_${ModuleName}.cpp)
+add_executable(test_coupledL2 test_dut.cc ${DUT_MODULE_DIR}/UT_${ModuleName}.cpp)
 target_link_libraries(test_coupledL2 UT${ModuleName} xspcomm ${CMAKE_DL_LIBS})

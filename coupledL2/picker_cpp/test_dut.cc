@@ -20,11 +20,11 @@ enum class OpcodeD : uint32_t { AccessAck, AccessAckData, HintAck, Grant = 0x4, 
 
 enum class OpcodeE : uint32_t { GrantAck = 0x4 };
 
-static constexpr std::initializer_list<const char *> ARGS = {"+verilator+rand+reset+0"};
-static auto dut = UTCoupledL2(ARGS);
-static auto &clk = dut.xclock;
+constexpr std::initializer_list<const char *> ARGS = {"+verilator+rand+reset+0"};
+auto dut = UTCoupledL2(ARGS);
+auto &clk = dut.xclock;
 
-inline void sendA(const OpcodeA opcode, const uint32_t size, const uint32_t address) {
+void sendA(OpcodeA opcode, uint32_t size, uint32_t address) {
   const auto &valid = dut.master_port_0_0_a_valid;
   const auto &ready = dut.master_port_0_0_a_ready;
   while (ready.value == 0x0) clk.Step();
@@ -36,7 +36,7 @@ inline void sendA(const OpcodeA opcode, const uint32_t size, const uint32_t addr
   valid.value = 0;
 }
 
-inline void getB() {
+void getB() {
   assert(false);
   const auto &valid = dut.master_port_0_0_b_valid;
   const auto &ready = dut.master_port_0_0_b_ready;
@@ -55,7 +55,7 @@ inline void getB() {
   ready.value = 0;
 }
 
-inline void sendC(const OpcodeC opcode, const uint32_t size, const uint32_t address, const uint64_t data) {
+void sendC(OpcodeC opcode, uint32_t size, uint32_t address, uint64_t data) {
   const auto &valid = dut.master_port_0_0_c_valid;
   const auto &ready = dut.master_port_0_0_c_ready;
 
@@ -69,7 +69,7 @@ inline void sendC(const OpcodeC opcode, const uint32_t size, const uint32_t addr
   valid.value = 0;
 }
 
-inline void getD() {
+void getD() {
   const auto &valid = dut.master_port_0_0_d_valid;
   const auto &ready = dut.master_port_0_0_d_ready;
   ready.value = 1;
@@ -78,7 +78,7 @@ inline void getD() {
   ready.value = 0;
 }
 
-inline void sendE(const uint32_t sink) {
+void sendE(uint32_t sink) {
   const auto &valid = dut.master_port_0_0_e_valid;
   const auto &ready = dut.master_port_0_0_e_ready;
   while (ready.value == 0) clk.Step();
@@ -88,9 +88,9 @@ inline void sendE(const uint32_t sink) {
   valid.value = 0;
 }
 
-inline void AcquireBlock(const uint32_t address) { sendA(OpcodeA::AcquireBlock, 0x6, address); }
+void AcquireBlock(uint32_t address) { sendA(OpcodeA::AcquireBlock, 0x6, address); }
 
-inline void GrantData(TLDataArray &r_data) {
+void GrantData(TLDataArray &r_data) {
   const auto &opcode = dut.master_port_0_0_d_bits_opcode;
   const auto &data = dut.master_port_0_0_d_bits_data;
 
@@ -100,14 +100,14 @@ inline void GrantData(TLDataArray &r_data) {
   }
 }
 
-inline void GrantAck(const uint32_t sink) { sendE(sink); }
+void GrantAck(uint32_t sink) { sendE(sink); }
 
-inline void ReleaseData(const uint32_t address, const TLDataArray &data) {
+void ReleaseData(uint32_t address, const TLDataArray &data) {
   for (int i = 0; i < 2; i++)
     sendC(OpcodeC::ReleaseData, 0x6, address, data[i]);
 }
 
-inline void ReleaseAck() {
+void ReleaseAck() {
   const auto &opcode = dut.master_port_0_0_d_bits_opcode;
   do { getD(); } while (opcode.value != OpcodeD::ReleaseAck);
 }

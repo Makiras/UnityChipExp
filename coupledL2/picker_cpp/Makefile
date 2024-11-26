@@ -38,7 +38,7 @@ _WAVEFORM ?=
 
 run-test: compile
 	@./out/build/test_coupledL2
-	@echo "---------Test CoupledL2 Start---------"
+	@echo "---------Test CoupledL2 End ---------"
 
 dut:
 	@echo "Building tage module with parameters: "
