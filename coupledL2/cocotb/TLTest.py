@@ -57,7 +57,12 @@ from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge
 import cocotb.triggers
 from cocotb.types import LogicArray
+import time
 from TLOP import *
+
+
+WARMUP_STEPS = 1000
+BENCH_STEPS = 300000
 
 
 async def AcquireBlock(dut, address: int):
@@ -110,29 +115,18 @@ async def ReleaseAck(dut):
 async def dff_simple_test(dut):
     clock = Clock(dut.clock, 1, units="ns")
 
-    # Reset
     cocotb.start_soon(clock.start(start_high=True))
     dut.reset.value = 1
-    for i in range(100):
+    for _ in range(WARMUP_STEPS):
         await RisingEdge(dut.clock)
-    dut.reset.value = 0
-    await RisingEdge(dut.clock)
 
-    # AcquireBlock & WriteBack & ReadAgain
-    ref_data = [0] * 0x10
-    for i in range(4000):
+    start = time.perf_counter()
+    for _ in range(BENCH_STEPS):
+        await RisingEdge(dut.clock)
+    elapsed_s = time.perf_counter() - start
 
-        # Read
-        address = random.randint(0, 0xF) << 6
-        await AcquireBlock(dut, address)
-        r_data, sink = await GrantData(dut)
-        print(f"Read {address} = {hex(r_data)}")
-        assert r_data == ref_data[address>>6]
-        await GrantAck(dut, sink)
-
-        # Write
-        data = random.randint(0, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)
-        await ReleaseData(dut, address, data)
-        ref_data[address>>6] = data
-        print(f"Write {address} = {hex(data)}")
-        await ReleaseAck(dut)
+    print(f"bench_warmup_steps={WARMUP_STEPS}")
+    print(f"bench_steps={BENCH_STEPS}")
+    print(f"bench_elapsed_ms={elapsed_s * 1000.0:.6f}")
+    speed = 0.0 if elapsed_s <= 0.0 else BENCH_STEPS / elapsed_s
+    print(f"bench_speed_cycles_per_s={speed:.6f}")

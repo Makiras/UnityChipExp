@@ -1,10 +1,56 @@
-**__pycache__
-**sim_build/
+# Editor settings
+.vscode/
+.codex
+.codex/
+
+# Common runtime/build artifacts
 *.log
 *.fst
 *.vcd
-*.xml
-**out
+*.fsdb
 *.dat
+*.xml
+time.log
 
-**/picker/env/UT_*
+# Python/cache artifacts
+**/__pycache__/
+
+# Build/cache directories
+**/logs/
+**/sim_build/
+**/.ccache/
+**/.ccache-tmp/
+**/.gocache/
+results/
+
+# Local backup/workspace directories
+chipyard/
+
+# Group A generated picker outputs
+/XS/dpi_python/
+/XS/mem_python/
+/XS/vpi_python/
+/XS/XSIT/
+/rocket/picker/dpi_python/
+/rocket/picker/mem_python/
+/rocket/picker/vpi_python/
+/coupledL2/picker/dpi_python/
+/coupledL2/picker/mem_python/
+/coupledL2/picker/vpi_python/
+
+# Group B generated multilang outputs
+/XS/multilang/dpi_python/
+/XS/multilang/dpi_cpp/
+/XS/multilang/dpi_java/
+/XS/multilang/dpi_golang/
+/rocket/multilang/dpi_python/
+/rocket/multilang/dpi_cpp/
+/rocket/multilang/dpi_java/
+/rocket/multilang/dpi_golang/
+/coupledL2/multilang/dpi_python/
+/coupledL2/multilang/dpi_cpp/
+/coupledL2/multilang/dpi_java/
+/coupledL2/multilang/dpi_golang/
+
+# Local picker env scratch
+**/picker/env/UT_*/
