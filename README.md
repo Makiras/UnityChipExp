@@ -34,6 +34,45 @@ Start from the repository root:
 cd /home/xyl/exp
 ```
 
+## Docker
+
+Published image:
+
+```bash
+sudo docker pull ghcr.io/makiras/unitychipexp:latest
+```
+
+Or build the image locally from the repository root:
+
+```bash
+cd /home/xyl/exp
+sudo docker build --network=host -f docker/Dockerfile -t exp-repro:dev .
+```
+
+Enter the container:
+
+```bash
+sudo docker run --rm -it exp-repro:dev
+```
+
+Inside the container, the working directory is already:
+
+```bash
+cd /home/xyl/exp
+```
+
+If runtime pinning fails inside the container, retry with:
+
+```bash
+PIN_RUNTIME=0
+```
+
+The default experiment setting keeps runtime pinning enabled. Only use this fallback when the container CPU layout does not match the pinned CPU list.
+
+The GitHub Actions workflow that builds and publishes the image is:
+
+- `.github/workflows/docker-image.yml`
+
 ## Group A
 
 Group A compares:
