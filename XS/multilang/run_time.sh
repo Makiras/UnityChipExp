@@ -10,6 +10,7 @@ RUN_REPEATS="${RUN_REPEATS:-7}"
 PIN_RUNTIME="${PIN_RUNTIME:-1}"
 PIN_CPUS="${PIN_CPUS:-96}"
 PIN_NUMA_NODE="${PIN_NUMA_NODE:-1}"
+JAVA_STACK_SIZE="${JAVA_STACK_SIZE:-64m}"
 mkdir -p "${LOG_DIR}"
 
 BENCH_ARGS=()
@@ -86,7 +87,7 @@ fi
 
 if [[ -f dpi_java/UT_SimTop/Makefile ]]; then
   ( cd dpi_java/UT_SimTop && rm -rf build UT_SimTop-java.jar && make TARGET=UT_SimTop compile ) > "${LOG_DIR}/java_prepare.log" 2>&1 || true
-  run_repeats java "dpi_java/UT_SimTop" /usr/bin/time -v java -cp xspcomm-java.jar:UT_SimTop-java.jar -ea com.ut.example
+  run_repeats java "dpi_java/UT_SimTop" /usr/bin/time -v java -Xss"${JAVA_STACK_SIZE}" -cp xspcomm-java.jar:UT_SimTop-java.jar -ea com.ut.SimTop.example
 else
   write_skip_log "${LOG_DIR}/java_prepare.log" "dpi_java/UT_SimTop/Makefile missing"
   write_skip_log "${LOG_DIR}/java_run.log" "dpi_java/UT_SimTop/Makefile missing"
