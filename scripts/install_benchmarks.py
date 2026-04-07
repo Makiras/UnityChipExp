@@ -10,7 +10,7 @@ TEMPLATE_DIR = REPO_ROOT / "benchmarks" / "templates"
 
 
 PICKER_CONFIG = {
-    "XS": {"dut_class": "DUTSimTop", "bench_steps": 300000, "warmup_steps": 1000},
+    "XS": {"dut_class": "DUTSimTop", "bench_steps": 5000, "warmup_steps": 1000},
     "rocket": {"dut_class": "DUTSimTop", "bench_steps": 300000, "warmup_steps": 1000},
     "coupledL2": {"dut_class": "DUTTestTop", "bench_steps": 300000, "warmup_steps": 1000},
 }

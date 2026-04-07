@@ -1,18 +1,21 @@
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge
+from cocotb.triggers import Timer
 import time
 
 
 WARMUP_STEPS = 1000
-BENCH_STEPS = 300000
+BENCH_STEPS = 5000
 
 @cocotb.test()
 async def dff_simple_test(dut):
+    dut.reset.value = 1
+    dut.clock.value = 0
     clock = Clock(dut.clock, 2, units="ps")
 
-    dut.reset.value = 1
-    cocotb.start_soon(clock.start(start_high=True))
+    await Timer(1, units="ps")
+    cocotb.start_soon(clock.start(start_high=False))
     for _ in range(WARMUP_STEPS):
         await RisingEdge(dut.clock)
 

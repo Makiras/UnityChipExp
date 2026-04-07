@@ -6,13 +6,17 @@ import time
 
 WARMUP_STEPS = 1000
 BENCH_STEPS = 300000
+RESET_CYCLES = 20
 
 @cocotb.test()
 async def dff_simple_test(dut):
     clock = Clock(dut.clock, 2, units="ps")
 
-    dut.reset.value = 1
     cocotb.start_soon(clock.start(start_high=True))
+    dut.reset.value = 1
+    for _ in range(RESET_CYCLES):
+        await RisingEdge(dut.clock)
+    dut.reset.value = 0
     for _ in range(WARMUP_STEPS):
         await RisingEdge(dut.clock)
 
