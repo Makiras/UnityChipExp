@@ -26,20 +26,13 @@ The commands below assume:
 - `ccache` is installed for the cocotb Verilator build
 - the local picker template directory exists at `/home/xyl/picker/template`
 
-## Quick Start
-
-Start from the repository root:
-
-```bash
-cd /home/xyl/exp
-```
-
 ## Docker
 
 Published image:
 
 ```bash
 sudo docker pull ghcr.io/makiras/unitychipexp:latest
+sudo docker run --rm -it ghcr.io/makiras/unitychipexp:latest
 ```
 
 Or build the image locally from the repository root:
@@ -47,11 +40,6 @@ Or build the image locally from the repository root:
 ```bash
 cd /home/xyl/exp
 sudo docker build --network=host -f docker/Dockerfile -t exp-repro:dev .
-```
-
-Enter the container:
-
-```bash
 sudo docker run --rm -it exp-repro:dev
 ```
 
@@ -61,25 +49,47 @@ Inside the container, the working directory is already:
 cd /home/xyl/exp
 ```
 
-If runtime pinning fails inside the container, retry with:
+Runtime pinning should stay enabled by default.
+
+- Group A pins runtime to a CPU set with `taskset`
+- Group B pins runtime to a single CPU with `taskset`
+- only if your machine or container cannot honor `taskset`, fall back to `PIN_RUNTIME=0`
+
+## Quick Start
+
+After the environment is ready, start from the repository root:
 
 ```bash
-PIN_RUNTIME=0
+cd /home/xyl/exp
 ```
 
-The default experiment setting keeps runtime pinning enabled. Only use this fallback when the container CPU layout does not match the pinned CPU list.
+Run the one-click scripts first if you only want to reproduce the experiments:
 
-The GitHub Actions workflow that builds and publishes the image is:
+```bash
+# Quick Check
+./scripts/A_without_XS.sh
+./scripts/B_without_XS.sh
+# Full Check ( more than 1 days )
+./scripts/A_with_XS.sh
+./scripts/B_with_XS.sh
+```
 
-- `.github/workflows/docker-image.yml`
+These scripts:
+
+- prefer reusing existing build artifacts
+- only rebuild when required files are missing
+- re-extract metrics automatically
+- print the CLI comparison charts at the end
+
+Use the manual commands below only if you want to run one DUT or one group step by step.
 
 ## Group A
 
 Group A compares:
 
 - `python-dpi`
-- `python-vpi`
 - `python-mem_direct`
+- `python-vpi`
 - `cocotb`
 
 Thread policy:
@@ -91,7 +101,9 @@ Thread policy:
 Runtime policy:
 
 - `warmup_steps = 1000`
-- `bench_steps = 300000`
+- `rocket = 300000` steps
+- `coupledL2 = 300000` steps
+- `XS = 5000` steps
 - `run_repeats = 7`
 - trim one max and one min sample
 - report the middle `5`
@@ -101,7 +113,8 @@ Runtime pinning:
 - `rocket/coupledL2`: `96-99`
 - `XS`: `96-103`
 
-### Run Group A for `rocket`
+
+### Manual Run for `rocket`
 
 ```bash
 cd /home/xyl/exp
@@ -110,7 +123,8 @@ make -C rocket/picker clean
 bash rocket/picker/build_time.sh
 bash rocket/picker/run_time.sh
 
-rm -rf rocket/cocotb/sim_build rocket/cocotb/results.xml rocket/cocotb/logs
+rm -rf rocket/cocotb/sim_build
+rm -f rocket/cocotb/results.xml
 bash rocket/cocotb/build_time.sh
 bash rocket/cocotb/run_time.sh
 
@@ -119,7 +133,7 @@ python3 scripts/extract_metrics.py \
   --output-dir results/extracted/group_a_rocket
 ```
 
-### Run Group A for `coupledL2`
+### Manual Run for `coupledL2`
 
 ```bash
 cd /home/xyl/exp
@@ -128,7 +142,8 @@ make -C coupledL2/picker clean
 bash coupledL2/picker/build_time.sh
 bash coupledL2/picker/run_time.sh
 
-rm -rf coupledL2/cocotb/sim_build coupledL2/cocotb/results.xml coupledL2/cocotb/logs
+rm -rf coupledL2/cocotb/sim_build
+rm -f coupledL2/cocotb/results.xml
 bash coupledL2/cocotb/build_time.sh
 bash coupledL2/cocotb/run_time.sh
 
@@ -137,7 +152,7 @@ python3 scripts/extract_metrics.py \
   --output-dir results/extracted/group_a_coupledl2
 ```
 
-### Run Group A for `XS`
+### Manual Run for `XS`
 
 ```bash
 cd /home/xyl/exp
@@ -146,7 +161,8 @@ make -C XS clean
 bash XS/build_time.sh
 bash XS/run_time.sh
 
-rm -rf XS/cocotb/sim_build XS/cocotb/results.xml XS/cocotb/logs
+rm -rf XS/cocotb/sim_build
+rm -f XS/cocotb/results.xml
 bash XS/cocotb/build_time.sh
 bash XS/cocotb/run_time.sh
 
@@ -187,7 +203,7 @@ Runtime pinning:
 - default CPU: `96`
 - default NUMA node: `1`
 
-### Run Group B for `rocket`
+### Manual Run for `rocket`
 
 ```bash
 cd /home/xyl/exp
@@ -201,7 +217,7 @@ python3 scripts/extract_metrics.py \
   --output-dir results/extracted/group_b_rocket
 ```
 
-### Run Group B for `coupledL2`
+### Manual Run for `coupledL2`
 
 ```bash
 cd /home/xyl/exp
@@ -215,7 +231,7 @@ python3 scripts/extract_metrics.py \
   --output-dir results/extracted/group_b_coupledl2
 ```
 
-### Run Group B for `XS`
+### Manual Run for `XS`
 
 ```bash
 cd /home/xyl/exp
@@ -227,50 +243,6 @@ bash XS/multilang/run_time.sh
 python3 scripts/extract_metrics.py \
   --group B \
   --output-dir results/extracted/group_b_xs
-```
-
-## All-in-One Commands
-
-### Group A, `rocket + coupledL2`
-
-```bash
-cd /home/xyl/exp
-
-make -C rocket/picker clean
-bash rocket/picker/build_time.sh
-bash rocket/picker/run_time.sh
-rm -rf rocket/cocotb/sim_build rocket/cocotb/results.xml rocket/cocotb/logs
-bash rocket/cocotb/build_time.sh
-bash rocket/cocotb/run_time.sh
-
-make -C coupledL2/picker clean
-bash coupledL2/picker/build_time.sh
-bash coupledL2/picker/run_time.sh
-rm -rf coupledL2/cocotb/sim_build coupledL2/cocotb/results.xml coupledL2/cocotb/logs
-bash coupledL2/cocotb/build_time.sh
-bash coupledL2/cocotb/run_time.sh
-
-python3 scripts/extract_metrics.py \
-  --group A \
-  --output-dir results/extracted/group_a
-```
-
-### Group B, `rocket + coupledL2`
-
-```bash
-cd /home/xyl/exp
-
-make -C rocket/multilang clean
-bash rocket/multilang/build_time.sh
-bash rocket/multilang/run_time.sh
-
-make -C coupledL2/multilang clean
-bash coupledL2/multilang/build_time.sh
-bash coupledL2/multilang/run_time.sh
-
-python3 scripts/extract_metrics.py \
-  --group B \
-  --output-dir results/extracted/group_b
 ```
 
 ## Output Files
@@ -289,8 +261,8 @@ The extractor writes:
 
 Main fields:
 
-- `codegen_total_s`
-- `build_total_s`
+- `codegen_total_cpu_s`
+- `build_total_cpu_s`
 - `simulation_speed`
 - `simulation_speed_std`
 - `peak_memory_kb`
@@ -299,7 +271,7 @@ Main fields:
 
 Definitions:
 
-- `codegen_total_s` and `build_total_s` use GNU `time` CPU time: `user + system`
+- `codegen_total_cpu_s` and `build_total_cpu_s` use GNU `time` CPU time: `user + system`
 - `simulation_speed` comes from benchmark output inside the program
 - `peak_memory_kb` comes from `/usr/bin/time -v`
 - repeated runtime logs are trimmed before aggregation
