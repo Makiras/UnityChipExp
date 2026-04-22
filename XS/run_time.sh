@@ -10,7 +10,7 @@ mkdir -p "${LOG_DIR}"
 
 RUN_REPEATS="${RUN_REPEATS:-7}"
 PIN_RUNTIME="${PIN_RUNTIME:-1}"
-PIN_CPUS="${PIN_CPUS:-96-103}"
+PIN_CPUS="${PIN_CPUS:-2-9}"
 
 run_case() {
     local variant="$1"

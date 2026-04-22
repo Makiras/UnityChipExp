@@ -8,8 +8,7 @@ cd "${SCRIPT_DIR}"
 LOG_DIR="${LOG_DIR:-logs}"
 RUN_REPEATS="${RUN_REPEATS:-7}"
 PIN_RUNTIME="${PIN_RUNTIME:-1}"
-PIN_CPUS="${PIN_CPUS:-96}"
-PIN_NUMA_NODE="${PIN_NUMA_NODE:-1}"
+PIN_CPUS="${PIN_CPUS:-2}"
 mkdir -p "${LOG_DIR}"
 
 BENCH_ARGS=()
@@ -42,7 +41,7 @@ copy_last_run_log() {
 
 run_pinned() {
   if [[ "${PIN_RUNTIME}" == "1" ]]; then
-    taskset -c "${PIN_CPUS}" numactl --cpunodebind="${PIN_NUMA_NODE}" --membind="${PIN_NUMA_NODE}" "$@"
+    taskset -c "${PIN_CPUS}" "$@"
   else
     "$@"
   fi

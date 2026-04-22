@@ -40,6 +40,13 @@ If runtime pinning cannot be honored on your machine, rerun with `PIN_RUNTIME=0`
 PIN_RUNTIME=0 ./scripts/A_without_XS.sh
 ```
 
+The runtime scripts use fixed `taskset` CPU sets instead of auto-detecting topology.
+
+- topology detection differs across bare metal, VMs, and containers, so fixed values are more reproducible here
+- Group A defaults expect at least `8` physical cores to make `2-5` and `2-9` usable as written
+- Group B defaults pin to `2`
+- you can still override `PIN_CPUS` manually if needed
+
 ## Extract Metrics
 
 Manual extraction:

@@ -15,7 +15,7 @@ BUILD_JOBS="${BUILD_JOBS:-$(nproc)}"
 
 RUN_REPEATS="${RUN_REPEATS:-7}"
 PIN_RUNTIME="${PIN_RUNTIME:-1}"
-PIN_CPUS="${PIN_CPUS:-96-99}"
+PIN_CPUS="${PIN_CPUS:-2-5}"
 
 for i in $(seq 1 "${RUN_REPEATS}"); do
     rm -f results.xml

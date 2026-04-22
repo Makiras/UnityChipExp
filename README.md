@@ -53,6 +53,8 @@ Runtime pinning should stay enabled by default.
 
 - Group A pins runtime to a CPU set with `taskset`
 - Group B pins runtime to a single CPU with `taskset`
+- automatic topology detection is intentionally avoided because it behaves differently across bare metal, VMs, and containers
+- the fixed defaults therefore expect at least `8` physical cores for reproducible runs
 - only if your machine or container cannot honor `taskset`, fall back to `PIN_RUNTIME=0`
 
 ## Quick Start
@@ -110,8 +112,14 @@ Runtime policy:
 
 Runtime pinning:
 
-- `rocket/coupledL2`: `96-99`
-- `XS`: `96-103`
+- `rocket/coupledL2`: `2-5`
+- `XS`: `2-9`
+
+These defaults are fixed instead of auto-detected.
+
+- different environments expose CPU topology differently, especially inside containers
+- for consistency, the scripts use fixed CPU sets and expect at least `8` physical cores
+- if your machine cannot honor these pinned sets, rerun with `PIN_RUNTIME=0` or override `PIN_CPUS`
 
 
 ### Manual Run for `rocket`
@@ -200,8 +208,8 @@ Build policy:
 
 Runtime pinning:
 
-- default CPU: `96`
-- default NUMA node: `1`
+- default CPU: `2`
+- no `numactl`; Group B now relies on `taskset` only
 
 ### Manual Run for `rocket`
 
