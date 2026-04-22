@@ -6,6 +6,8 @@ ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${ROOT_DIR}"
 
 OUTPUT_DIR="results/extracted/group_a_with_xs"
+PLOT_DIR="results/plots/group_a_with_xs"
+OVERVIEW_PNG="${PLOT_DIR}/group_a_overview.png"
 
 need_picker_build() {
   local dut="$1"
@@ -57,4 +59,17 @@ python3 scripts/plot_metrics_cli.py \
   --input "${OUTPUT_DIR}/metrics.csv" \
   --group A | tee "${OUTPUT_DIR}/group_a_cli_plot.txt"
 
+python3 scripts/plot_metrics.py \
+  --input "${OUTPUT_DIR}/metrics.csv" \
+  --group A \
+  --output-dir "${PLOT_DIR}"
+
+CONTAINER_REF="$(hostname)"
 echo "wrote ${OUTPUT_DIR}"
+echo "wrote ${OVERVIEW_PNG}"
+echo "copy overview png from host:"
+echo "  docker cp ${CONTAINER_REF}:/home/xyl/exp/${OVERVIEW_PNG} ./"
+echo "copy extracted outputs from host:"
+echo "  docker cp ${CONTAINER_REF}:/home/xyl/exp/${OUTPUT_DIR} ./$(basename "${OUTPUT_DIR}")"
+echo "copy plot outputs from host:"
+echo "  docker cp ${CONTAINER_REF}:/home/xyl/exp/${PLOT_DIR} ./$(basename "${PLOT_DIR}")"

@@ -79,6 +79,17 @@ The CLI plots are grouped by DUT:
 - `coupledL2`
 - `rocket`
 
+## Matplotlib Plots
+
+PNG plots with the same DUT grouping and per-DUT normalization as the CLI output:
+
+```bash
+python3 scripts/plot_metrics.py --group A
+python3 scripts/plot_metrics.py --group B
+```
+
+By default the script writes PNG files under `results/plots/`.
+
 ## Notes
 
 - `scripts/experiment_matrix.csv` is the case source of truth.

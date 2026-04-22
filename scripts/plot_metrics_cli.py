@@ -17,7 +17,7 @@ def default_input_path():
     return extracted_root / "final_all_latest" / "metrics.csv"
 
 DUT_ORDER = ["XS", "coupledL2", "rocket"]
-GROUP_A_VARIANTS = ["python-dpi", "python-mem_direct", "python-vpi", "cocotb"]
+GROUP_A_VARIANTS = ["python-mem_direct", "python-dpi", "python-vpi", "cocotb"]
 GROUP_B_VARIANTS = ["raw-verilator", "cpp", "python", "golang", "java"]
 
 GROUP_METRICS = {

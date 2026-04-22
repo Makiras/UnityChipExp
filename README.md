@@ -82,6 +82,27 @@ These scripts:
 - only rebuild when required files are missing
 - re-extract metrics automatically
 - print the CLI comparison charts at the end
+- render matplotlib overview figures automatically
+
+They write both extracted tables and overview figures:
+
+- Group A: `results/extracted/...` and `results/plots/.../group_a_overview.png`
+- Group B: `results/extracted/...` and `results/plots/.../group_b_overview.png`
+
+The Docker image is configured for headless plotting:
+
+- `matplotlib` is installed in the image
+- `MPLBACKEND=Agg` is set, so no X11 or desktop environment is required
+
+When a one-click script finishes inside Docker, it prints the in-container PNG path and matching `docker cp` commands.
+If you want to copy files manually from the host, replace `<container>` with your container ID or name:
+
+```bash
+docker cp <container>:/home/xyl/exp/results/plots/group_a/group_a_overview.png ./
+docker cp <container>:/home/xyl/exp/results/plots/group_b/group_b_overview.png ./
+docker cp <container>:/home/xyl/exp/results/extracted/group_a ./group_a
+docker cp <container>:/home/xyl/exp/results/extracted/group_b ./group_b
+```
 
 Use the manual commands below only if you want to run one DUT or one group step by step.
 

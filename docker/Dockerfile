@@ -5,6 +5,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
     LANGUAGE=C.UTF-8 \
     LC_ALL=C.UTF-8 \
+    MPLBACKEND=Agg \
+    MPLCONFIGDIR=/tmp/matplotlib \
     JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 \
     JDK_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 
@@ -28,6 +30,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ccache \
     cmake \
     curl \
+    fonts-dejavu-core \
     flex \
     g++ \
     gcc \
@@ -67,7 +70,7 @@ RUN git clone https://github.com/verilator/verilator.git \
     rm -rf /tmp/verilator
 
 RUN python3 -m pip install --no-cache-dir --upgrade pip && \
-    python3 -m pip install --no-cache-dir cocotb==1.9.2
+    python3 -m pip install --no-cache-dir cocotb==1.9.2 matplotlib
 
 RUN git clone https://github.com/swig/swig.git \
         --branch ${SWIG_VERSION} \

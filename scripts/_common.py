@@ -169,7 +169,9 @@ def artifact_size_bytes(row):
         return artifact.stat().st_size if artifact.exists() else None
 
     patterns = []
-    if row["group"] == "A":
+    if row["group"] == "A" and row["variant"] == "python-mem_direct":
+        patterns = [".so", ".yaml"]
+    elif row["group"] == "A":
         patterns = [".so"]
     elif row["variant"] == "python":
         patterns = [".so"]
