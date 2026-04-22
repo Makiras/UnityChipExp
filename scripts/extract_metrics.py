@@ -309,10 +309,8 @@ def resolve_phase_log(row, raw_root, phase):
 
 def parse_build_metrics(row, build_entries):
     if row["flow"] == "cocotb":
-        if len(build_entries) >= 1:
+        if build_entries:
             return sum(entry["cpu_s"] for entry in build_entries), "sum_cocotb_cpu_phases"
-        if len(build_entries) == 1:
-            return None, "combined_build_run_total_only"
         return None, None
 
     if not build_entries:

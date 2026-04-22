@@ -50,11 +50,15 @@ def write_json(path, payload):
     path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
 
 
-_ELAPSED_RE = re.compile(r"(?P<elapsed>\d+:\d+(?::\d+(?:\.\d+)?)?(?:\.\d+)?)elapsed")
 _TIME_SUMMARY_RE = re.compile(
     r"(?P<user>\d+(?:\.\d+)?)user\s+"
     r"(?P<system>\d+(?:\.\d+)?)system\s+"
     r"(?P<elapsed>\d+:\d+(?::\d+(?:\.\d+)?)?(?:\.\d+)?)elapsed"
+)
+_VERBOSE_USER_RE = re.compile(r"User time \(seconds\):\s*(?P<value>\d+(?:\.\d+)?)")
+_VERBOSE_SYSTEM_RE = re.compile(r"System time \(seconds\):\s*(?P<value>\d+(?:\.\d+)?)")
+_VERBOSE_ELAPSED_RE = re.compile(
+    r"Elapsed \(wall clock\) time \(h:mm:ss or m:ss\):\s*(?P<value>\d+:\d+(?::\d+(?:\.\d+)?)?)"
 )
 _RSS_RE = re.compile(r"Maximum resident set size \(kbytes\):\s*(?P<rss>\d+)")
 
@@ -70,28 +74,64 @@ def parse_elapsed_to_seconds(value):
     raise ValueError(f"unsupported elapsed value: {value}")
 
 
+def _make_time_entry(user_s, system_s, elapsed_value):
+    elapsed_s = parse_elapsed_to_seconds(elapsed_value)
+    return {
+        "user_s": user_s,
+        "system_s": system_s,
+        "cpu_s": user_s + system_s,
+        "elapsed_s": elapsed_s,
+    }
+
+
+def _extract_summary_time_entries(text):
+    entries = []
+    for match in _TIME_SUMMARY_RE.finditer(text):
+        entries.append(
+            _make_time_entry(
+                float(match.group("user")),
+                float(match.group("system")),
+                match.group("elapsed"),
+            )
+        )
+    return entries
+
+
+def _extract_verbose_time_entries(text):
+    entries = []
+    user_s = None
+    system_s = None
+    for line in text.splitlines():
+        match = _VERBOSE_USER_RE.search(line)
+        if match:
+            user_s = float(match.group("value"))
+            continue
+
+        match = _VERBOSE_SYSTEM_RE.search(line)
+        if match:
+            system_s = float(match.group("value"))
+            continue
+
+        match = _VERBOSE_ELAPSED_RE.search(line)
+        if match and user_s is not None and system_s is not None:
+            entries.append(_make_time_entry(user_s, system_s, match.group("value")))
+            user_s = None
+            system_s = None
+    return entries
+
+
 def extract_last_elapsed_seconds(text):
-    matches = list(_ELAPSED_RE.finditer(text))
-    if not matches:
+    entries = extract_all_time_entries(text)
+    if not entries:
         return None
-    return parse_elapsed_to_seconds(matches[-1].group("elapsed"))
+    return entries[-1]["elapsed_s"]
 
 
 def extract_all_time_entries(text):
-    entries = []
-    for match in _TIME_SUMMARY_RE.finditer(text):
-        user_s = float(match.group("user"))
-        system_s = float(match.group("system"))
-        elapsed_s = parse_elapsed_to_seconds(match.group("elapsed"))
-        entries.append(
-            {
-                "user_s": user_s,
-                "system_s": system_s,
-                "cpu_s": user_s + system_s,
-                "elapsed_s": elapsed_s,
-            }
-        )
-    return entries
+    summary_entries = _extract_summary_time_entries(text)
+    if summary_entries:
+        return summary_entries
+    return _extract_verbose_time_entries(text)
 
 
 def extract_all_elapsed_seconds(text):
@@ -125,7 +165,8 @@ def artifact_size_bytes(row):
         return None
 
     if row["flow"] == "cocotb":
-        return sum(p.stat().st_size for p in runtime_dir.rglob("*") if p.is_file())
+        artifact = runtime_dir / "Vtop"
+        return artifact.stat().st_size if artifact.exists() else None
 
     patterns = []
     if row["group"] == "A":
