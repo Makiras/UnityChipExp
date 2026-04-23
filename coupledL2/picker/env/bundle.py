@@ -1,4 +1,4 @@
-from mlvp import Bundle, Signals, Signal
+from toffee import Bundle, Signals, Signal
 
 class DecoupledBundle(Bundle):
     ready, valid = Signals(2)
